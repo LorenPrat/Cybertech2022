@@ -24,15 +24,18 @@ float reg=0;
 float va=0, vb=0;
 int Lectura[3];
 int Centro = 320; //Toca definir la distancia a la pared otra vez, sheit
-int Aumento = 320; //Distancia maxim que miden los sensores? La pista es grande
-int Limite = 280; //Distancia para que de marcha atras
-int Limite2 = 280;
+int Aumento = 320; //Lo que aumenta, pero tambien la distancia a la pared en el centro, por no meter mas variables
+int Limite = 280; //Distancia maxim que miden los sensores? La pista es grande
+int Limite2 = 280; //Distancia para que de marcha atras
+int LIM = 800; //Distancia maxima al exterior, para que no se coma el centro o deje de leer
 int T = 0;
-int flag = 1; //Para el timer, que siempre se cumpla 
+int flag = 1; //Para el barrido exterior, que siempre se cumpla una vuelta o lo que sea
+int flag2 = 0; //Para los limites
 float Timer = 0;
-int Vuelta = 20000; //Tiempo que tarda en dar una vuelta, mas o menos, toca medirlo a ojo
+int Vuelta = 20000; //Tiempo que tarda en dar una vuelta y media, mas o menos, toca medirlo a ojo
 int aux = 0;
-int aux2 = 0; //Me odio por tener que hacer esto
+int aux2 = 0; //Me odio por tener que hacer esto, 2 auxiliares, fack. Se podria quitar uno?
+int aux3 = 0; //Sin comentarios, era necesario
 int Rumbo = 0; //Para saber si esta barriendo en perimetro o de camino a casa
 
 
@@ -92,6 +95,7 @@ float regulator(float e){
 
 int LEER(){
   //Leer el sensor de la linea, no me acuerdo de la funcion
+  //Vamos a tope, confiamos
   aux = SensorRead o algo asi
   if (aux > 1500){return 0;}
   else {return 1;}
@@ -110,7 +114,7 @@ void VolverCentro () {
   turnRight(vn);
   delay(50);
   Forward(vn,vn);
-  delay(100);
+  delay(100); //Ajustar el tiempo para que llegue a la pared bien
 }
 
 void DejarCarga () {
@@ -123,9 +127,9 @@ void DejarCarga () {
   delay(200); //Y salimos de la zona  
 }
 
-void SeguirPared (){
+void SeguirPared (int aux3){
   Leer(Lectura);
-  e = Centro - Lectura[0];
+  e = aux3 - Lectura[0];
   reg = regulator(e);
   va = vn + reg;
   vb = vn - reg;
@@ -168,17 +172,31 @@ void setup()
   
   Timer= millis();
   enableMotors();
+  Forward (vn,vn);
+  delay(2000); //Para que vaya recto y salga al comienzo del centro, a ajustar como todo =(
 }
 
-void loop()
-{
+void loop() {
     T = millis();
-    if ((T-Timer) > (flag*Vuelta)){
-      flag++;
+        
+    if ((T-Timer) > (flag*Vuelta)){ //Ajustar tiempos para que sea como vuelta y media, para que el regreso sea por la parte de atras
+      flag++;                       // De esta manera nos aseguramos que no llegue al centro por delante, eso seria malo supongo
       Rumbo = 1;
-      Centro = Centro + Aumento;
+      Centro = Centro + Aumento; //Para que cada vuelta sea mas lejos de la pared externa
+      if (Centro > LIM) { // Para que vaya se acerque al interior y luego se aleje, hasta que se acabe el tiempo
+        Centro = LIM;
+        flag2 = 1;
+      }
+      if (Centro < Aumento) {
+        Centro = -Aumento;
+        flag2 = 1;
+      }
+      if (flag2 = 1) {
+        Aumento = -Aumento;
+        flag = 0
     }
-    if (Rumbo == 0){SeguirPared();}
+    
+    if (Rumbo == 0){SeguirPared(Centro);}
 
     if (Rumbo == 1){
       if (aux2 == 0) {
@@ -186,7 +204,7 @@ void loop()
       aux2 = 1;
       }
       Rumbo = LEER();
-      SeguirPared();
+      SeguirPared(Aumento);
       if (Rumbo == 0){
         DejarCarga();
         aux2 = 0;
