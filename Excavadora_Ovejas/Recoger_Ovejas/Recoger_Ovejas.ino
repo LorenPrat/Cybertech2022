@@ -17,7 +17,7 @@ const int pinMotorB[3] = { pinPWMB, pinBIN1, pinBIN2 };
 //PID VALUES//
 float kp=0.25, kd=0, ki=0; //Voy a asumir que no habra que tocar mucho esto, pero no se que valores nos dara el sensor nuevo
 //PROGRAM VARIABLES//
-float vn=50; //vn=100;
+float vn=50; //vn=100, despacito y con buena letra
 float cor=0, e=0, eprev=0, sum=0;
 float pos=0;
 float reg=0;
@@ -31,7 +31,8 @@ int T = 0;
 int flag = 1; //Para el timer, que siempre se cumpla 
 float Timer = 0;
 int Vuelta = 20000; //Tiempo que tarda en dar una vuelta, mas o menos, toca medirlo a ojo
-
+int aux = 0;
+int aux2 = 0; //Me odio por tener que hacer esto
 int Rumbo = 0; //Para saber si esta barriendo en perimetro o de camino a casa
 
 
@@ -44,6 +45,16 @@ void Forward(float speedA, float speedB){
 void Back(float speedA, float speedB){
     moveMotorBackward(pinMotorA, speedA);
     moveMotorBackward(pinMotorB, speedB);
+}
+
+void turnRight(float rotspeed){
+    moveMotorForward(pinMotorA, rotspeed);
+    moveMotorBackward(pinMotorB, rotspeed);
+}
+
+void turnLeft(float rotspeed){
+    moveMotorBackward(pinMotorA, rotspeed);
+    moveMotorForward(pinMotorB, rotspeed);
 }
 
 void Stop(){
@@ -79,18 +90,37 @@ float regulator(float e){
   return cor;
   }
 
-void LEER(){
-  //Leer el sensor de la linea, 
+int LEER(){
+  //Leer el sensor de la linea, no me acuerdo de la funcion
+  aux = SensorRead o algo asi
+  if (aux > 1500){return 0;}
+  else {return 1;}
 }
 
 void Leer(int Lectura[3]){
+  //Leer los sensores de distancia, espero que marta sepa...
 
+  
 }
 
 void VolverCentro () {
   //Giro a 90, recto hasta pared y rezar que no se pierda
   Back(vn,vn);
-  
+  delay(1);
+  turnRight(vn);
+  delay(50);
+  Forward(vn,vn);
+  delay(100);
+}
+
+void DejarCarga () {
+  delay (200); //Como para que acabe el giro y entre, a ajustar
+  Back(vn,vn);
+  delay(1);
+  turnRight(vn);
+  delay(100);
+  Forward(vn,vn);
+  delay(200); //Y salimos de la zona  
 }
 
 void SeguirPared (){
@@ -104,7 +134,8 @@ void SeguirPared (){
   if(va<25){va=25;}
   if(vb<25){vb=25;}
   Forward (va,vb);
- 
+
+ //No se porque hay dos limites, =(, podriamos eliminar uno, solo nos interesa el de delante no?
   if (Lectura[1] >= Limite){
     Back(vn,vn);
     delay(1);
@@ -134,7 +165,7 @@ void setup()
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
   pinMode(D5, INPUT); //El de la linea
-
+  
   Timer= millis();
   enableMotors();
 }
@@ -147,16 +178,20 @@ void loop()
       Rumbo = 1;
       Centro = Centro + Aumento;
     }
-    if (Rumbo = 0){
-      SeguirPared(); 
-    }
+    if (Rumbo == 0){SeguirPared();}
 
-    else if (Rumbo = 1){
-      VolverCentro();
-      
-      
-    }
-   
-   
+    if (Rumbo == 1){
+      if (aux2 == 0) {
+      VolverCentro(); //Solo una vez claro
+      aux2 = 1;
+      }
+      Rumbo = LEER();
+      SeguirPared();
+      if (Rumbo == 0){
+        DejarCarga();
+        aux2 = 0;
+        Timer = millis();
+      }
+    }   
 
 }
