@@ -6,9 +6,9 @@
 #define LOX3_ADDRESS 0x32
 
 // set the pins to shutdown
-#define SHT_LOX1 53
-#define SHT_LOX2 51
-#define SHT_LOX3 49
+#define SHT_LOX1 4
+#define SHT_LOX2 3
+#define SHT_LOX3 2
 
 
 // objects for the VL6180X

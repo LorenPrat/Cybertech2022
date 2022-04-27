@@ -14,7 +14,7 @@
 #define LOX3_ADDRESS 0x32
 
 // set the pins to shutdown
-#define SHT_LOX1 4  //Izquierda
+#define SHT_LOX1 4  //Izquierda, a ajustar, que no se en que orden los puse,
 #define SHT_LOX2 3  //Centro
 #define SHT_LOX3 2  //Derecha
 
@@ -147,8 +147,7 @@ void setup()
   enableMotors();
 }
 
-void loop()
-{
+void loop() {
   Lectura[0] = lox1.readRange();
   Lectura[1] = lox2.readRange();
   Lectura[2] = lox3.readRange();
@@ -165,8 +164,7 @@ void loop()
     va = vn + reg;
     vb = vn - reg;
     }
-  
-    
+      
   if(va>255){va=255;}
   if(vb>255){vb=255;}
   if(va<25){va=25;}
@@ -184,6 +182,5 @@ void loop()
     turnRight(vn);
     delay (45);
    }
-  }  
-   
+  }    
 }
