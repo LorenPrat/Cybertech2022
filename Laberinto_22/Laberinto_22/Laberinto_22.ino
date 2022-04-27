@@ -1,0 +1,189 @@
+#include <Adafruit_VL6180X.h>
+
+#define pinPWMA  11
+#define pinAIN2  12
+#define pinAIN1  10
+#define pinBIN1  8
+#define pinBIN2  7
+#define pinPWMB  6
+#define pinSTBY  9
+
+// address we will assign if dual sensor is present
+#define LOX1_ADDRESS 0x30
+#define LOX2_ADDRESS 0x31
+#define LOX3_ADDRESS 0x32
+
+// set the pins to shutdown
+#define SHT_LOX1 4  //Izquierda
+#define SHT_LOX2 3  //Centro
+#define SHT_LOX3 2  //Derecha
+
+
+// objects for the VL6180X
+Adafruit_VL6180X lox1 = Adafruit_VL6180X();
+Adafruit_VL6180X lox2 = Adafruit_VL6180X();
+Adafruit_VL6180X lox3 = Adafruit_VL6180X();
+
+//MOTORS//
+const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
+const int pinMotorB[3] = { pinPWMB, pinBIN1, pinBIN2 };
+
+//PID VALUES//
+float kp=0.8, kd=0, ki=0; //80mm centro, 1mm minimo que lee, 100 de vel y maximo que regulamos - 80/100
+//PROGRAM VARIABLES//
+float vn=100; 
+float cor=0, e=0, eprev=0, sum=0;
+float pos=0;
+float reg=0;
+float va=0, vb=0;
+int Lectura[3];
+int Centro = 80;  //Medidas en mm
+int Limite = 20;
+int Limite2 = 20;
+int T = 20000;
+int flag = 0;
+float Timer = 0;
+
+
+//Funciones que controlan el vehiculo
+void Forward(int speedA, int speedB){
+    moveMotorForward(pinMotorA, speedA);
+    moveMotorForward(pinMotorB, speedB);
+}
+
+void Back(int speedA, int speedB){
+    moveMotorBackward(pinMotorA, speedA);
+    moveMotorBackward(pinMotorB, speedB);
+}
+
+void turnRight(int rotspeed){
+    moveMotorForward(pinMotorA, rotspeed);
+    moveMotorBackward(pinMotorB, rotspeed);
+}
+
+void turnLeft(int rotspeed){
+    moveMotorBackward(pinMotorA, rotspeed);
+    moveMotorForward(pinMotorB, rotspeed);
+}
+
+void Stop(){
+  disableMotors();
+  stopMotor(pinMotorA);
+  stopMotor(pinMotorB);
+  enableMotors();
+}
+
+//Funciones que controlan los motores
+void moveMotorForward(const int pinMotor[3], int Speed){
+  digitalWrite(pinMotor[1], HIGH);
+  digitalWrite(pinMotor[2], LOW);
+  analogWrite(pinMotor[0], Speed);
+}
+void moveMotorBackward(const int pinMotor[3], int Speed){
+  digitalWrite(pinMotor[1], LOW);
+  digitalWrite(pinMotor[2], HIGH);
+  analogWrite(pinMotor[0], Speed);
+}
+void stopMotor(const int pinMotor[3]){
+  digitalWrite(pinMotor[1], LOW);
+  digitalWrite(pinMotor[2], LOW);
+  analogWrite(pinMotor[0], 0);
+}
+void enableMotors() {digitalWrite(pinSTBY, HIGH);}
+void disableMotors(){digitalWrite(pinSTBY, LOW);}
+
+float regulator(float e){
+  cor = (kp*e) + (kd*(e- eprev)) + (ki*sum);
+  eprev = e;
+  sum = sum + e;
+  return cor;
+  }
+
+void setID() {
+  // all reset
+  digitalWrite(SHT_LOX1, LOW);
+  digitalWrite(SHT_LOX2, LOW);
+  digitalWrite(SHT_LOX3, LOW);
+  delay(10);
+  // all unreset
+  digitalWrite(SHT_LOX1, HIGH);
+  digitalWrite(SHT_LOX2, HIGH);
+  digitalWrite(SHT_LOX3, HIGH);
+  delay(10);
+  // activating LOX1
+  digitalWrite(SHT_LOX1, HIGH);
+  digitalWrite(SHT_LOX2, LOW);
+  digitalWrite(SHT_LOX3, LOW);
+  lox1.begin();
+  lox1.setAddress(LOX1_ADDRESS);
+  delay(10);
+  // activating LOX2
+  digitalWrite(SHT_LOX2, HIGH);
+  delay(10);
+  lox2.begin();
+  lox2.setAddress(LOX2_ADDRESS);
+  // activating LOX3
+  digitalWrite(SHT_LOX3, HIGH);
+  delay(10);
+  lox3.begin();
+  lox3.setAddress(LOX3_ADDRESS);
+}
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(pinAIN2, OUTPUT);
+  pinMode(pinAIN1, OUTPUT);
+  pinMode(pinPWMA, OUTPUT);
+  pinMode(pinBIN1, OUTPUT);
+  pinMode(pinBIN2, OUTPUT);
+  pinMode(pinPWMB, OUTPUT);
+  pinMode(SHT_LOX1, OUTPUT);
+  pinMode(SHT_LOX2, OUTPUT);
+  pinMode(SHT_LOX3, OUTPUT);
+
+  setID();
+  Timer= millis();
+  enableMotors();
+}
+
+void loop()
+{
+  Lectura[0] = lox1.readRange();
+  Lectura[1] = lox2.readRange();
+  Lectura[2] = lox3.readRange();
+  
+  if (flag == 0){
+    e = Centro - Lectura[2];
+    reg = regulator(e);
+    va = vn - reg;
+    vb = vn + reg;
+    }
+  if (flag == 1){
+    e = Centro - Lectura[0];
+    reg = regulator(e);
+    va = vn + reg;
+    vb = vn - reg;
+    }
+  
+    
+  if(va>255){va=255;}
+  if(vb>255){vb=255;}
+  if(va<25){va=25;}
+  if(vb<25){vb=25;}
+  Forward (va,vb);
+ 
+  if (Lectura[1] >= Limite){
+    Back(vn,vn);
+    delay(1);
+  if ((Lectura[1] >= Limite) && (Lectura[0] >= Limite2) && (Lectura[2] >= Limite2)) {
+      turnRight(vn);
+      delay (20);
+    }
+  if((Lectura[1] >= Limite) && (Lectura[0] <= Limite2)){
+    turnRight(vn);
+    delay (45);
+   }
+  }  
+   
+}
