@@ -153,6 +153,8 @@ void setup()
   pinMode(A7, INPUT);
   //qtr laterales
   pinMode(5, INPUT);    //RIGHT
+  // led pin
+  pinMode(13, OUTPUT);
 
   // configure the sensors
   qtr.setTypeAnalog();
@@ -167,6 +169,8 @@ void setup()
   {
     qtr.calibrate();
   }
+  
+  digitalWrite(13, HIGH);
   
   enableMotors();
 }
