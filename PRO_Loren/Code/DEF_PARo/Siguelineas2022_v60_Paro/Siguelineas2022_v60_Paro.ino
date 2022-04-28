@@ -37,7 +37,7 @@ uint16_t sensorValuesm[SensorCount];
 const uint8_t SensorCountl = 1;
 uint16_t sensorValuesl[SensorCountl];
 //PID VALUES//
-float kp=1.5, kd=0, ki=0; //35
+float kp=1.5, kd=1, ki=0; //35
 //PROGRAM VARIABLES//
 float vn=60; //vn=100;
 float cor=0, e=0, eprev=0, sum=0;
@@ -254,7 +254,7 @@ void loop()
             }
           if (sensorValuesl[0] <= 1000){
             if (flag==1){
-              //startstop=2;
+              startstop=2;
               flag=0;
               timer=millis();
               }

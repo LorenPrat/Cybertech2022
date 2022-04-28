@@ -34,25 +34,25 @@ const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
 const int pinMotorB[3] = { pinPWMB, pinBIN1, pinBIN2 };
 
 //Funciones que controlan el vehiculo
-void Forward(float speedA, float speedB)
+void Forward(int speedA, int speedB)
 {
     moveMotorForward(pinMotorA, speedA);
     moveMotorForward(pinMotorB, speedB);
 }
 
-void Back(float speedA, float speedB)
+void Back(int speedA, int speedB)
 {
     moveMotorBackward(pinMotorA, speedA);
     moveMotorBackward(pinMotorB, speedB);
 }
 
-void turnRight(float rotspeed)
+void turnRight(int rotspeed)
 {
     moveMotorForward(pinMotorA, rotspeed);
     moveMotorBackward(pinMotorB, rotspeed);
 }
 
-void turnLeft(float rotspeed)
+void turnLeft(int rotspeed)
 {
     moveMotorBackward(pinMotorA, rotspeed);
     moveMotorForward(pinMotorB, rotspeed);
@@ -99,6 +99,7 @@ void setup()
   pinMode(pinBIN2, OUTPUT);
   pinMode(pinPWMB, OUTPUT);
   //pinMode(pinENA, OUTPUT);
+  //digitalWrite (pinENA,HIGH);
   pinMode(CH1, INPUT);
   pinMode(CH2, INPUT);
   pinMode(CH3, INPUT);
@@ -112,43 +113,46 @@ void loop()
 {
   //leer canales
   ch[0] = pulseIn(CH1, HIGH); //(joystick dcho) giro dcha 1100 izq 1800 medio 1450
-  ch[1] = pulseIn(CH2, HIGH); //(joystick dcho) sentido arriba 1100 abajo 1900 medio 1500
-  ch[2] = pulseIn(CH3, HIGH); //(joystick izq) pwm arriba 1900/ abajo 1100/ centro 1500-1600
+  ch[1] = pulseIn(CH3, HIGH); //(joystick dcho) sentido arriba 1100 abajo 1900 medio 1500
+  ch[2] = pulseIn(CH2, HIGH); //(joystick izq) pwm arriba 1900/ abajo 1100/ centro 1500-1600
   ch[3] = pulseIn(CH4, HIGH); //(joystick izq) pwm derecha 1100 izquierda 1800 medio 1450
   ch[4] = pulseIn(CH5, HIGH); // nada es in canal que te cambia un valor de 100 a 1500 y está en un gatillo
   
   //Cálculo de pwm nominal al que mover robot en función de lo leído
-  vel = map (ch[2],1850,1150,250,0);
+  vel = map (ch[2],1850,1150,0,250);
   if (vel>250) vel=250;
   else if (vel<0) vel=0;
   //Cálculo de los pwm a cada motor distinto
   reg = map (ch[0],1800,1150,vel*0.5,-vel*0.5);
   veli = vel - reg;
   veld = vel + reg;
-
+  
   if (veld>250) veld=250;
   else if (veld<0) veld=0;
   
   if (veli>250) veli=250;
   else if (veli<0) veli=0;
 
+  Serial.println(veld);
+
   // giros y sentido
   if (ch[3]>=1650) {
-    turnLeft(vel); //giro en eje con joy izq
+    turnRight(vel); //giro en eje con joy izq
     //Serial.println("giro izquierda");
     }
   else if (ch[3]<=1250) {
-    turnRight(vel); //giro en eje con joy izq
+    turnLeft(vel); //giro en eje con joy izq
     //Serial.println("giro derecha");
     }
-    else if (ch[1]>=1700) {
-      Back (veli, veld);
+    else if (ch[1]<=1350) {
+      Forward (veli, veld);
       //Serial.println("marcha atrás");
       }
-      else {
-        Forward (veli,veld);
+      else if (ch[1]>=1650){
+        Back (veli,veld);
         //Serial.println("marcha alante");
         }
+        else Stop();
   
   
 }
