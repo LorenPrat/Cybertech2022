@@ -14,9 +14,9 @@
 #define LOX3_ADDRESS 0x32
 
 // set the pins to shutdown
-#define SHT_LOX1 4  //Izquierda, a ajustar, que no se en que orden los puse,
-#define SHT_LOX2 3  //Centro
-#define SHT_LOX3 2  //Derecha
+#define SHT_LOX1 3  //Izquierda, a ajustar, que no se en que orden los puse,
+#define SHT_LOX2 2  //Centro
+#define SHT_LOX3 4  //Derecha
 
 
 // objects for the VL6180X
@@ -26,20 +26,20 @@ Adafruit_VL6180X lox3 = Adafruit_VL6180X();
 
 //MOTORS//
 const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
-const int pinMotorB[3] = { pinPWMB, pinBIN1, pinBIN2 };
+const int pinMotorB[3] = { pinPWMB, pinBIN2, pinBIN1 };
 
 //PID VALUES//
-float kp=0.8, kd=0, ki=0; //80mm centro, 1mm minimo que lee, 100 de vel y maximo que regulamos - 80/100
+float kp=0.45, kd=0.1, ki=0; //80mm centro, 1mm minimo que lee, 100 de vel y maximo que regulamos - 80/100
 //PROGRAM VARIABLES//
-float vn=100; 
+float vn=60; 
 float cor=0, e=0, eprev=0, sum=0;
 float pos=0;
 float reg=0;
-float va=0, vb=0;
+float va=0, vb=0, vcb=30;
 int Lectura[3];
-int Centro = 80;  //Medidas en mm
-int Limite = 20;
-int Limite2 = 20;
+int Centro = 40;  //Medidas en mm
+int Limite = 30;
+int Limite2 = 30;
 int T = 20000;
 int flag = 0;
 float Timer = 0;
@@ -143,7 +143,11 @@ void setup()
   pinMode(SHT_LOX3, OUTPUT);
 
   setID();
-  Timer= millis();
+  do {
+    disableMotors ();
+    Lectura[1] = lox2.readRange();
+  }
+  while(Lectura[1] < 40);
   enableMotors();
 }
 
@@ -152,26 +156,20 @@ void loop() {
   Lectura[1] = lox2.readRange();
   Lectura[2] = lox3.readRange();
   
-  if (flag == 0){
-    e = Centro - Lectura[2];
+    e = Lectura[0] - Lectura[2];
     reg = regulator(e);
-    va = vn - reg;
-    vb = vn + reg;
-    }
-  if (flag == 1){
-    e = Centro - Lectura[0];
-    reg = regulator(e);
-    va = vn + reg;
+    va = vn - vcb + reg;
     vb = vn - reg;
-    }
+  
       
-  if(va>255){va=255;}
-  if(vb>255){vb=255;}
-  if(va<25){va=25;}
-  if(vb<25){vb=25;}
-  Forward (va,vb);
+  if(va>255){va=254;}
+  if(vb>255){vb=254;}
+  if(va<0){va=0;}
+  if(vb<0){vb=0;}
+  
+
  
-  if (Lectura[1] >= Limite){
+/*  if (Lectura[1] >= Limite){
     Back(vn,vn);
     delay(1);
   if ((Lectura[1] >= Limite) && (Lectura[0] >= Limite2) && (Lectura[2] >= Limite2)) {
@@ -182,5 +180,8 @@ void loop() {
     turnRight(vn);
     delay (45);
    }
-  }    
+  } */
+  else {  
+  Forward (va,vb);
+}
 }
