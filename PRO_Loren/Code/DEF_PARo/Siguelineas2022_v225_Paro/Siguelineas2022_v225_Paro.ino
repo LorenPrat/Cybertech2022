@@ -24,7 +24,8 @@
 #define pinPWMB  6
 #define pinSTBY  9
 
-#define vnomin 60
+#define vnomin 200
+float factor=200/140;
 
 //MOTORS//
 const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
@@ -37,7 +38,7 @@ uint16_t sensorValuesm[SensorCount];
 const uint8_t SensorCountl = 1;
 uint16_t sensorValuesl[SensorCountl];
 //PID VALUES//
-float kp=1.5, kd=0, ki=0; //35
+float kp=6.5*factor, kd=5.5*factor, ki=0.009; //35
 //PROGRAM VARIABLES//
 float vn=60; //vn=100;
 float cor=0, e=0, eprev=0, sum=0;
@@ -101,6 +102,8 @@ float regulator(float e){
   cor = (kp*e) + (kd*(e- eprev)) + (ki*sum);
   eprev = e;
   sum = sum + e;
+  if (sum > 1000) sum=100;
+  else if(sum < -1000) sum=100;
   return cor;
   }
 void printe(){
@@ -177,7 +180,7 @@ void setup()
 
 void loop()
 { 
-  printe();
+  //printe();
   if (startstop==0){
     qtrl.read(sensorValuesl);                // black = 2500 // white = 0
     pos = qtr.readLineBlack(sensorValues);   //centre=3500;  line to the left=0;  line to the right=7000//
@@ -254,7 +257,7 @@ void loop()
             }
           if (sensorValuesl[0] <= 1000){
             if (flag==1){
-              //startstop=2;
+              startstop=2;
               flag=0;
               timer=millis();
               }
