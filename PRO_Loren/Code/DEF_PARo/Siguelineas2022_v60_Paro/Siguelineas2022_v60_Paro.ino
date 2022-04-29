@@ -200,10 +200,10 @@ void loop()
     //###########################################
     //###### To know when to start or stop ######
     //###########################################
-    if (sensorValuesl[0] >= 1000){
+    if (sensorValuesl[0] >= 800){
       flag=1;
       }
-    if (sensorValuesl[0] <= 1000){
+    if (sensorValuesl[0] <= 800){
       if (flag==1){
         vn=vnomin;
         startstop=1;
