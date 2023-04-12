@@ -1,0 +1,30 @@
+Conversión de Solid Edge en STL
+Fecha: miércoles,abril 12,2023 09:54
+Archivo fuente:C:\Users\pablo\Desktop\PROYECTOS\PROYECTOS Propios\cybertech 2022\sumo\Cuerpo_extraible_sumo_2023.par
+Sistema fuente: SOLID EDGE
+
+Hardware:
+Procesador: AMD Ryzen 5 2500U with Radeon Vega Mobile Gfx  
+Sistema operativo: Windows 10
+Memoria instalada: 7,55 GB
+
+Información sobre el software:
+Versión de Parasolid: 32.1.222
+Versión de PSBodyShop: 32.1.94
+Versión de Solid Edge: 221.00.00.114 x64
+
+Opciones de exportación de STL:
+Formato de la carpeta de salida:ASCII
+Exportar las piezas visualizadas: Desactivado
+Opción estructural: Monolithic
+Unidades de exportación: Millimeter
+Valor de la tolerancia de exportación:0,001000
+Tipo de tolerancia de exportación: Custom
+Valor del ángulo plano de superficie de exportación:0,017453
+
+Avance en la conversión:
+Fase 1 de 2 recuperando la información sobre Parasolid...
+Fase 2 de 2 convirtiendo Parasolid en tipos de datos externos...
+Número de archivos STL creados: 1
+Se completó el proceso de conversión
+Tiempo necesario para convertir:00 : 00 : 01
