@@ -29,16 +29,16 @@ const int pinMotorA[3] = { pinPWMA, pinAIN2, pinAIN1 };
 const int pinMotorB[3] = { pinPWMB, pinBIN2, pinBIN1 };
 
 //PID VALUES//
-float kp=0.7, kd=0.1, ki=0; //80mm centro, 1mm minimo que lee, 100 de vel y maximo que regulamos - 80/100 //0.45
+float kp=0.45, kd=0, ki=0; //80mm centro, 1mm minimo que lee, 100 de vel y maximo que regulamos - 80/100 //0.45
 //PROGRAM VARIABLES//
-float vn=60; 
+float vn=40; 
 float cor=0, e=0, eprev=0, sum=0;
 float pos=0;
 float reg=0;
-float va=0, vb=0, vcb=30;
+float va=0, vb=0, vcb=0, vcbi=30;//vcb=30
 int Lectura[3];
-int Centro = 40;  //Medidas en mm
-int Limite = 30;
+int Centro = 70;  //Medidas en mm
+int Limite = 100;
 int Limite2 = 30;
 int T = 20000;
 int flag = 0;
@@ -98,6 +98,26 @@ float regulator(float e){
   sum = sum + e;
   return cor;
   }
+void printe(){
+  Serial.print(Lectura[0]);
+  Serial.print("...");
+  Serial.print(Lectura[1]);
+  Serial.print("...");
+  Serial.print(Lectura[2]);
+  Serial.print("...");
+  Serial.print("e=");
+  Serial.print(e);
+  Serial.print("--");
+  Serial.print("reg=");
+  Serial.print(reg);
+  Serial.print("###");
+  Serial.print("va=");
+  Serial.print(va);
+  Serial.print("###");
+  Serial.print("vb=");
+  Serial.print(vb);
+  Serial.println("...");
+  }
 
 void setID() {
   // all reset
@@ -155,40 +175,31 @@ void loop() {
   Lectura[0] = lox1.readRange();
   Lectura[1] = lox2.readRange();
   Lectura[2] = lox3.readRange();
-
-  Serial.print(Lectura[0]);
-  Serial.print("...");
-  Serial.print(Lectura[1]);
-  Serial.print("...");
-  Serial.print(Lectura[2]);
-  Serial.println("...");
   
-    e = Lectura[0] - Lectura[2];
+    e = Lectura[0] - Centro;
     reg = regulator(e);
-    va = vn - vcb + reg;
-    vb = vn - reg;
-  
+//    if (reg<0) vcb = -vcbi;
+//    if (reg>0) vcb = vcbi;
+    va = vn*0.8 + reg;
+    vb = vn*1.3 - reg;
+  if (Lectura[2]<=30) va=200;
+  if (Lectura[0]<=30) vb=200;
       
   if(va>255){va=254;}
   if(vb>255){vb=254;}
   if(va<0){va=0;}
   if(vb<0){vb=0;}
-  
 
- 
-/*  if (Lectura[1] >= Limite){
-    Back(vn,vn);
-    delay(1);
-  if ((Lectura[1] >= Limite) && (Lectura[0] >= Limite2) && (Lectura[2] >= Limite2)) {
-      turnRight(vn);
-      delay (20);
+  if (Lectura[1]<=Limite){
+    if ((Lectura[0]<=100)&&(Lectura[2]>100)){
+      turnLeft(200);
+      delay(250);
+      }
+      else if ((Lectura[0]<=100)&&(Lectura[2]<=100)){
+        turnLeft(200);
+        delay(250);
+      }
     }
-  if((Lectura[1] >= Limite) && (Lectura[0] <= Limite2)){
-    turnRight(vn);
-    delay (45);
-   }
-  } */
-  else {  
+    
   Forward (va,vb);
-}
 }
