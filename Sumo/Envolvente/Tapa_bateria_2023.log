@@ -1,5 +1,5 @@
 Conversión de Solid Edge en STL
-Fecha: miércoles,abril 12,2023 09:53
+Fecha: miércoles,abril 19,2023 09:32
 Archivo fuente:C:\Users\pablo\Desktop\PROYECTOS\PROYECTOS Propios\cybertech 2022\sumo\Tapa_bateria_2023.par
 Sistema fuente: SOLID EDGE
 
@@ -27,4 +27,4 @@ Fase 1 de 2 recuperando la información sobre Parasolid...
 Fase 2 de 2 convirtiendo Parasolid en tipos de datos externos...
 Número de archivos STL creados: 1
 Se completó el proceso de conversión
-Tiempo necesario para convertir:00 : 00 : 00
+Tiempo necesario para convertir:00 : 00 : 02
